@@ -11,7 +11,7 @@ class Tag(TagBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated from orm_mode to from_attributes
 
 class CategoryBase(BaseModel):
     name: constr(strip_whitespace=True, min_length=1, max_length=50)
@@ -23,7 +23,7 @@ class Category(CategoryBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated from orm_mode to from_attributes
 
 class ProductImageBase(BaseModel):
     url: HttpUrl
@@ -35,7 +35,7 @@ class ProductImage(ProductImageBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated from orm_mode to from_attributes
 
 class ProductBase(BaseModel):
     name: constr(strip_whitespace=True, min_length=1, max_length=100)
@@ -58,4 +58,4 @@ class Product(ProductBase):
     images: List[ProductImage] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated from orm_mode to from_attributes
