@@ -169,7 +169,12 @@ s3_client = boto3.client(
 
 def upload_file_to_s3(file_obj, bucket, object_name):
     try:
-        s3_client.upload_fileobj(file_obj, bucket, object_name, ExtraArgs={"ACL": "public-read", "ContentType": file_obj.content_type})
+        s3_client.upload_fileobj(
+            file_obj,
+            bucket,
+            object_name,
+            ExtraArgs={"ACL": "public-read", "ContentType": file_obj.content_type}
+        )
     except (BotoCoreError, ClientError) as e:
         print(f"Error uploading to S3: {e}")
         return False
@@ -179,22 +184,19 @@ def upload_file_to_s3(file_obj, bucket, object_name):
 def upload_image(file: UploadFile = File(...), password: str = Form(...)):
     if password != ADMIN_PASSWORD:
         raise HTTPException(status_code=401, detail="Invalid admin password")
-
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Not an image file")
-
     ext = os.path.splitext(file.filename)[1].lower()
     if ext not in [".jpg", ".jpeg", ".png", ".gif", ".webp"]:
         raise HTTPException(status_code=400, detail="Unsupported image extension")
-
     unique_filename = f"{uuid.uuid4().hex}{ext}"
-
+    # Debug: Print file details
+    print(f"Uploading file: {file.filename}, Content Type: {file.content_type}")
     # Upload to S3
-    file.file.seek(0)
+    file.file.seek(0)  # Ensure the file pointer is at the start
     success = upload_file_to_s3(file.file, AWS_S3_BUCKET_NAME, unique_filename)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to upload image to S3")
-
     s3_url = f"https://{AWS_S3_BUCKET_NAME}.s3.{AWS_S3_REGION}.amazonaws.com/{unique_filename}"
     return {"url": s3_url}
 
