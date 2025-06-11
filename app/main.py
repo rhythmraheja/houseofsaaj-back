@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, File, UploadFile, Form, status
+from fastapi import FastAPI, HTTPException, Depends, File, UploadFile, Query, status
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,10 +40,7 @@ def get_db():
 # Simple admin authentication using API key query param (for demo)
 ADMIN_PASSWORD = "admin123"
 
-def admin_auth(password: str = Form(...)):
-    if password != ADMIN_PASSWORD:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid admin password")
-    return True
+# Removed the admin_auth function as it's no longer needed
 
 # Static directory for images
 IMAGES_DIR = os.path.join(os.path.dirname(__file__), 'static', 'images')
@@ -106,7 +103,7 @@ def get_product_detail(product_id: int, db: Session = Depends(get_db)):
     return product
 
 @app.post("/products", response_model=schemas.Product)
-def create_product(product: schemas.ProductCreate, password: str = Form(...), db: Session = Depends(get_db)):
+def create_product(product: schemas.ProductCreate, password: str = Query(...), db: Session = Depends(get_db)):
     if password != ADMIN_PASSWORD:
         raise HTTPException(status_code=401, detail="Invalid admin password")
     # Validate category exists
@@ -121,7 +118,7 @@ def create_product(product: schemas.ProductCreate, password: str = Form(...), db
     return crud.create_product(db, product)
 
 @app.put("/products/{product_id}", response_model=schemas.Product)
-def update_product(product_id: int, product_data: schemas.ProductUpdate, password: str = Form(...), db: Session = Depends(get_db)):
+def update_product(product_id: int, product_data: schemas.ProductUpdate, password: str = Query(...), db: Session = Depends(get_db)):
     if password != ADMIN_PASSWORD:
         raise HTTPException(status_code=401, detail="Invalid admin password")
     # Validate category
@@ -138,7 +135,7 @@ def update_product(product_id: int, product_data: schemas.ProductUpdate, passwor
     return product
 
 @app.delete("/products/{product_id}", status_code=204)
-def delete_product(product_id: int, password: str = Form(...), db: Session = Depends(get_db)):
+def delete_product(product_id: int, password: str = Query(...), db: Session = Depends(get_db)):
     if password != ADMIN_PASSWORD:
         raise HTTPException(status_code=401, detail="Invalid admin password")
     success = crud.delete_product(db, product_id)
@@ -168,7 +165,7 @@ s3_client = boto3.client(
 )
 
 @app.post("/upload-image")
-def upload_image(file: UploadFile = File(...), password: str = Form(...)):
+def upload_image(file: UploadFile = File(...), password: str = Query(...)):
     if password != ADMIN_PASSWORD:
         raise HTTPException(status_code=401, detail="Invalid admin password")
 
@@ -205,4 +202,3 @@ def upload_file_to_s3(file_obj, bucket, object_name, content_type):
         print(f"Error uploading to S3: {e}")
         return False
     return True
-
