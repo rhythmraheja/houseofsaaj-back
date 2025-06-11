@@ -17,7 +17,7 @@ app = FastAPI(title="House of Saaj API")
 
 # CORS for react frontend
 origins = [
-    "http://localhost:3000",  # React default port
+    "https://houseofsaaj-front.onrender.com",  # React default port
     # add your frontend domain if deployed
 ]
 
